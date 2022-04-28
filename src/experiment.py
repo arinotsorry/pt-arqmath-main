@@ -187,16 +187,25 @@ def main():
     print("Running topics...")
 
     # TODO Pipeline for EPIC
-
+    # need parameters
     dataset = generate_XML_post_docs( file_list, formula_index=formulas, debug_out=debug )
+    #train topics somehow
 
     indexed_epic = onir_pt.indexed_epic.from_checkpoint('', index_path = './epic')
 
     index_ref = indexed_epic.index( dataset, fields=TEXT_META_FIELDS )
 
-    # indexed_epic.index(index_ref, fields=('TEXT_META_FIELDS'))
+    indexed_epic.index(index_ref, fields=('TEXT_META_FIELDS'))
 
     epic_pipeline = (bm25_pipeline >> indexed_epic.reranker())
+    
+    epic_pipeline.fit(
+        train_topics,
+        train_ds.get_qrels(),
+        valid_topics,
+        train_ds.get_qrels()
+        )
+
 
     ndcg_metrics = pt.Experiment(
         [bm25_pipeline, epic_pipeline],
