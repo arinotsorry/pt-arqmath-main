@@ -168,7 +168,8 @@ def generate_XML_post_docs(file_name_list, formula_index=False, debug_out=False 
                             'votes' :   votes
                         }
 
-
+# To change the stemmer, replace token_pipeline="Stopwords,PorterStemmer" with EnglishSnowballStemmer, or WeakPorterStemmer
+# to use no stemmer, use token_pipeline="Stopwords"
 def create_XML_index( file_list, indexName, token_pipeline="Stopwords,PorterStemmer", formulas=False, debug=False):
     # Storing processed text AND original text in meta index, docs, to support neural reranking with keywords, and 
     # viewing original posts
@@ -221,6 +222,10 @@ def view_index( indexName, index, view_tokens, view_stats ):
 def search_engine( index, 
         model, 
         metadata_keys=[], 
+        # To use a different stemmer, uncomment the line of the stemmer you wish to use
+        # token_pipeline="Stopwords,WeakPorterStemmer"
+        # token_pipeline="Stopwords,EnglishSnowballStemmer"
+        # token_pipeline="Stopwords"
         token_pipeline="Stopwords,PorterStemmer" ):
     return pt.BatchRetrieve( index, wmodel=model, 
             properties={ "termpipelines" : token_pipeline }, 
@@ -338,6 +343,10 @@ def process_args():
     xgroup.add_argument('-mp', '--mathpost', help='create math and post indices', action="store_true")
     parser.add_argument('-l', '--lexicon', help='show lexicon', action="store_true" )
     parser.add_argument('-s', '--stats', help="show collection statistics", action="store_true" )
+    # To use a different stemmer, change the stemmer in default for the tokens argument
+        # default="Stopwords,WeakPorterStemmer"
+        # default="Stopwords,EnglishSnowballStemmer"
+        # default="Stopwords"
     parser.add_argument('-t', '--tokens', help="set tokenization property (none:  no stemming/stopword removal)", 
             default='Stopwords,PorterStemmer' )
     parser.add_argument('-n', '--notest', help="skip retrieval tests after indexing", action="store_true" )
