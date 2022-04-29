@@ -14,6 +14,7 @@ import argparse
 import pyterrier as pt
 from pyterrier.measures import *
 import os, sys
+#from pyterrier_colbert.ranking import ColBERTFactory
 # import pdb
 
 # Constants
@@ -53,7 +54,7 @@ def load_index(index_dir, lexicon, stats):
     return index
 
 
-def report_results(ndcg_metrics, binarized_metrics, reranking_epic, top_k, prime):
+def report_results(ndcg_metrics, binarized_metrics, top_k, prime):
     # Make clear what we're using!
     prime_string = ''
 
@@ -70,10 +71,6 @@ def report_results(ndcg_metrics, binarized_metrics, reranking_epic, top_k, prime
     print("\nResults for binarized relevance : mAP" + prime_string + ", Precision at 10" + prime_string)
     print("----------------------------------------------------------")
     print(binarized_metrics)
-
-    print("\nResults for EPIC re-ranking relevance : mAP" + prime_string + ", Precision at 10" + prime_string)
-    print("----------------------------------------------------------")
-
     print("\ndone.")
 
 
@@ -150,7 +147,8 @@ def main():
     print('\n>>> Initializing PyTerrier...')
     if not pt.started():
         pt.init()
-    import onir_pt
+    #import onir_pt
+    from pyterrier_colbert.ranking import ColBERTFactory
     print("\n>>> Starting up ")
 
     # Collect topics, qrels index
@@ -188,27 +186,32 @@ def main():
 
     # TODO Pipeline for EPIC
     # need parameters
-    dataset = generate_XML_post_docs( file_list, formula_index=formulas, debug_out=debug )
+    
+
+    colbert_trained = ColBERTFactory("http://www.dcs.gla.ac.uk/~craigm/colbert.dnn.zip", None, None)
+    bm25_colbert_pipeline = bm25_pipeline >> colbert_trained.text_scorer()
+
+    #dataset = generate_XML_post_docs( file_list, formula_index=formulas, debug_out=debug )
     #train topics somehow
 
-    indexed_epic = onir_pt.indexed_epic.from_checkpoint('', index_path = './epic')
+    #indexed_epic = onir_pt.indexed_epic.from_checkpoint('', index_path = './epic')
 
-    index_ref = indexed_epic.index( dataset, fields=TEXT_META_FIELDS )
+    #index_ref = indexed_epic.index( dataset, fields=TEXT_META_FIELDS )
 
-    indexed_epic.index(index_ref, fields=('TEXT_META_FIELDS'))
+    #indexed_epic.index(index_ref, fields=('TEXT_META_FIELDS'))
 
-    epic_pipeline = (bm25_pipeline >> indexed_epic.reranker())
+    #epic_pipeline = (bm25_pipeline >> indexed_epic.reranker())
     
-    epic_pipeline.fit(
-        train_topics,
-        train_ds.get_qrels(),
-        valid_topics,
-        train_ds.get_qrels()
-        )
+    #epic_pipeline.fit(
+     #   train_topics,
+      #  train_ds.get_qrels(),
+       # valid_topics,
+       # train_ds.get_qrels()
+       # )
 
-
+    #print("here")
     ndcg_metrics = pt.Experiment(
-        [bm25_pipeline, epic_pipeline],
+        [bm25_colbert_pipeline],
         query_df,
         qrels_df,
         eval_metrics=["ndcg", "mrt"],
@@ -218,14 +221,14 @@ def main():
     )
 
     binarized_metrics = pt.Experiment(
-        [bm25_engine, epic_pipeline],
+        [bm25_colbert_pipeline],
         query_df,
         qrels_thresholded,
         eval_metrics=["P_10", "map", "mrt"],
         names=[weight_model],
         save_dir="./"
     )
-
+    '''
     cutoffs = [10]  #, 50, 100]
     reranking_depth = pt.Experiment(
         [bm25_engine % cutoff >> indexed_epic.reranker() for cutoff in cutoffs],
@@ -235,9 +238,9 @@ def main():
         names=[weight_model],
         save_dir="./"
     )
-
+    '''
     # Report results at the command line.
-    report_results(ndcg_metrics, binarized_metrics, reranking_depth, top_k, prime)
+    report_results(ndcg_metrics, binarized_metrics, top_k, prime)
 
 
 main()
