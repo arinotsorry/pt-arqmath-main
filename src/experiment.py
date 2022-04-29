@@ -135,6 +135,7 @@ def process_args():
 def main():
     # Process arguments
     args = process_args()
+    print(args.qrelFile)
     # Set pandas display width wider
     pd.set_option('display.max_colwidth', 150)
 
@@ -188,6 +189,25 @@ def main():
 
     # TODO Pipeline for EPIC
     # need parameters
+    dataset = pt.datasets.get_dataset('irds:cord19/trec-covid')
+
+    indexed_epic = onir_pt.indexed_epic.from_checkpoint('https://macavaney.us/epic.msmarco.tar.gz', index_path='./epic_cord19')
+    indexed_epic.index(dataset.get_corpus_iter(), fields=('abstract',))
+
+    br = pt.BatchRetrieve(index) % 30
+    pipeline = (br >> indexed_epic.reranker())
+    pt.Experiment(
+        [br, pipeline],
+        dataset.get_topics('description'),
+        dataset.get_qrels(),
+        names=['bm25_pipeline', 'bm25_pipeline >> EPIC (indexed)'],
+        eval_metrics=["map", "P_10", "ndcg", "mrt"]
+    )
+
+
+
+
+"""
     dataset = generate_XML_post_docs( file_list, formula_index=formulas, debug_out=debug )
     #train topics somehow
 
@@ -238,7 +258,7 @@ def main():
 
     # Report results at the command line.
     report_results(ndcg_metrics, binarized_metrics, reranking_depth, top_k, prime)
-
+"""
 
 main()
 
