@@ -1,13 +1,6 @@
 ## Authors:
 Meghan Cantlin, Kiersten Reina, Ari Wisenburn
 
-/*
-in the main pt-arqmath-main directory, run:
-`chmod +x run_me.sh`
-`./run_me.sh`
-*/
-
-## Explanation:
 This program assumes the BM25 initial ranking has been completed. After the
 `make`, `make data`, `make math`, and `make posts` steps are completed
 successfully, in the main pt-arqmath-main directory, run:
