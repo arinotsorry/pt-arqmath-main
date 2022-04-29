@@ -79,7 +79,7 @@ def report_results(ndcg_metrics, binarized_metrics, reranking_epic, top_k, prime
 
 ################################################################
 # Evaluation
-################################################################
+###############################################################
 # Used to remove unasessed hits in search results for prime (') metrics
 # Consider only up to MAX_HITS
 def select_assessed_hits(qrel_df, top_k=1000, prime=True):
