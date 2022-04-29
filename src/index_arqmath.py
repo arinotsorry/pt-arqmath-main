@@ -490,6 +490,31 @@ def main():
     print('>>> Indexing complete.\n')
 
     print("Ari's thing:")
+
+    from sklearn.model_selection import train_test_split
+    #train_ds = pt.datasets.get_dataset('./run-topics-2020')
+    train_topics, valid_topics = train_test_split('./run-topics-2020', test_size=16, random_state=42) # split into training and validation sets
+    # train_topics = query_df
+
+    # Index MS MARCO
+    indexer = pt.index.IterDictIndexer('./ARQMath_Collection')
+    tr_index_ref = indexer.index('./ARQMath_Collection-post-ptindex', fields=('text',), meta=('docno',))
+
+    pipeline = (pt.BatchRetrieve(tr_index_ref) % 100 # get top 100 results
+        >> pt.text.get_text('./ARQMath_Collection-post-ptindex', 'text') # fetch the document text
+        >> pt.apply.generic(lambda df: df.rename(columns={'text': 'abstract'})) # rename columns
+        >> knrm) # apply neural re-ranker
+
+    pipeline.fit(
+        train_topics,
+        train_ds.get_qrels(),
+        valid_topics,
+        train_ds.get_qrels())
+
+
+
+"""
+
     from sklearn.model_selection import train_test_split
     # train_ds = pt.datasets.get_dataset('irds:msmarco-passage/train/medical')
     train_topics, valid_topics = train_test_split('./run-topics-2020', test_size=3, random_state=42) # split into training and validation sets
@@ -545,7 +570,9 @@ def main():
     # Top k
     k = 5
     if not args.notest:
-        test_retrieval( k, post_index, math_index, 'BM25', args.tokens, debug=args.debug )    
+        test_retrieval( k, post_index, math_index, 'BM25', args.tokens, debug=args.debug )  
+
+"""  
 
 if __name__ == "__main__":
     main()
