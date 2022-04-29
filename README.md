@@ -1,3 +1,11 @@
+## Authors:
+Meghan Cantlin, Kiersten Reina, Ari Wisenburn
+
+## How to run:
+in the main pt-arqmath-main directory, run:
+`chmod +x .sh`
+`./whateverthefile.sh`
+
 ## PyTerrier Framework for ARQMath Task 1
 
 `pt-arqmath` was created for the Information Retrieval course at the Rochester Institute of Technology in Spring 2022. PyTerrier provides a flexible framework for building, running, and comparing a variety of different search engines, including neural retrieval models. 
