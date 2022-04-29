@@ -491,6 +491,11 @@ def main():
 
     print("Ari's thing:")
 
+    lazy_epic = onir_pt.reranker.from_checkpoint('https://macavaney.us/epic.msmarco.tar.gz')
+
+    br = pt.BatchRetrieve(index)
+
+"""
     from sklearn.model_selection import train_test_split
     #train_ds = pt.datasets.get_dataset('./run-topics-2020')
     train_topics, valid_topics = train_test_split('./run-topics-2020', test_size=16, random_state=42) # split into training and validation sets
@@ -512,7 +517,7 @@ def main():
         train_ds.get_qrels())
 
 
-
+"""
 """
 
     from sklearn.model_selection import train_test_split
